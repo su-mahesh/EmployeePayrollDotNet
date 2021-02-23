@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace EmployeePayrollService
@@ -18,5 +19,6 @@ namespace EmployeePayrollService
         public double TaxablePay { get; set; }
         public double IncomeTax { get; set; }
         public double NetPay { get; set; }
+        
     }
 }
