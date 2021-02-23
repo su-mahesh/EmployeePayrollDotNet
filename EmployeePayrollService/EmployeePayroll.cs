@@ -35,10 +35,32 @@ namespace EmployeePayrollService
         static void Main(string[] args)
         {
             Console.WriteLine("welcome to Employee Payroll Service");
-            DataSet dataset = GetAllEmployeeDetail();
-            PrintDataSet(dataset);
         }
+        static public void InsertEmployeeData(EmployeeModel employee)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand("dbo.AddEmployeeDetail", connection);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@EmpName", employee.Name);
+                    cmd.Parameters.AddWithValue("@Gender", employee.Gender);
+                    cmd.Parameters.AddWithValue("@StartDate", employee.StartDate);
+                    cmd.Parameters.AddWithValue("@PhoneNumber", employee.PhoneNumber);
+                    cmd.Parameters.AddWithValue("@Address", employee.Address);
 
+                    cmd.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         public static void PrintDataSet(DataSet dataset)
         {
             if (dataset != null)
