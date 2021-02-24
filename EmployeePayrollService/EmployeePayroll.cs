@@ -92,7 +92,10 @@ namespace EmployeePayrollService
             }
             return null;
         }
-
+        /// <summary>
+        /// Gets the sum of salary of all employee payroll data.
+        /// </summary>
+        /// <returns></returns>
         public static decimal GetSumOfSalary_OfAllEmployeePayrollData()
         {
             decimal totalSalary = 0;

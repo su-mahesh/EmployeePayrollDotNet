@@ -77,10 +77,12 @@ namespace NUnitTestProject
             };
             Assert.IsTrue(result.Contains(employee));
         }
+        /// <summary>
+        /// Retrievings the sum of salary should return expected.
+        /// </summary>
         [Test]
         public void RetrievingSumOfSalary_ShouldReturnExpected()
         {
-
             decimal result = EmployeePayroll.GetSumOfSalary_OfAllEmployeePayrollData();
 
             Assert.AreEqual(600000.0000M, result);
