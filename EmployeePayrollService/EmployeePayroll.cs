@@ -9,6 +9,10 @@ namespace EmployeePayrollService
     {
         static string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EmployeePayroll;User Id=mahesh;Password=root";
 
+        /// <summary>
+        /// Gets all employee payroll data.
+        /// </summary>
+        /// <returns></returns>
         public static List<EmployeeModel> GetAllEmployeePayrollData()
         {
             EmployeeModel employee;
@@ -43,6 +47,10 @@ namespace EmployeePayrollService
             }
             return null;
         }
+        /// <summary>
+        /// Prints the employee data.
+        /// </summary>
+        /// <param name="employee">The employee.</param>
         public static void PrintEmployeeData(EmployeeModel employee)
         {
             Console.WriteLine("EmpID".PadRight(12) + ": " + employee.EmpID);
@@ -63,12 +71,7 @@ namespace EmployeePayrollService
             }
         }
 
-        static void Main(string[] args)
-        {
-            Console.WriteLine("welcome to Employee Payroll Service");
-
-            PrintEmployeeData(GetAllEmployeePayrollData());
-        static public void InsertEmployeeData(EmployeeModel employee)
+        static public int InsertEmployeeData(EmployeeModel employee)
         {
             SqlConnection connection = new SqlConnection(connectionString);
             try
@@ -76,39 +79,33 @@ namespace EmployeePayrollService
                 using (connection)
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("dbo.AddEmployeeDetail", connection);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@EmpName", employee.Name);
+                    SqlCommand cmd = new SqlCommand("dbo.AddEmployeePayrollData", connection)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+                    cmd.Parameters.AddWithValue("@EmpName", employee.EmpName);
                     cmd.Parameters.AddWithValue("@Gender", employee.Gender);
                     cmd.Parameters.AddWithValue("@StartDate", employee.StartDate);
-                    cmd.Parameters.AddWithValue("@PhoneNumber", employee.PhoneNumber);
-                    cmd.Parameters.AddWithValue("@Address", employee.Address);
-
-                    cmd.ExecuteNonQuery();
+                    cmd.Parameters.AddWithValue("@Salary", employee.Salary);
+                    cmd.Parameters.AddWithValue("@Department", employee.Department);             
+                    var returnParameter = cmd.Parameters.Add("@new_identity", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+                    int rows = cmd.ExecuteNonQuery();
+                    
                     connection.Close();
+                    var result = returnParameter.Value;
+                    return (int)result; 
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
+            return 0;
         }
-        public static void PrintDataSet(DataSet dataset)
+        static void Main(string[] args)
         {
-            if (dataset != null)
-            {
-                foreach (DataTable table in dataset.Tables)
-                {
-                    foreach (DataRow row in table.Rows)
-                    {
-                        foreach (DataColumn column in table.Columns)
-                        {
-                            Console.WriteLine(column.ColumnName.PadRight(20) + ": " + row[column]);
-                        }
-                        Console.WriteLine();
-                    }
-                }
-            }           
+            Console.WriteLine("welcome to Employee Payroll Service");
         }
     }
 }
