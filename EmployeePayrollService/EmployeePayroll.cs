@@ -7,7 +7,7 @@ namespace EmployeePayrollService
 {
     public class EmployeePayroll
     {
-        static string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EmployeePayroll;User Id=mahesh;Password=root";
+        static readonly string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EmployeePayroll;User Id=mahesh;Password=root";
 
         /// <summary>
         /// Gets all employee payroll data.
@@ -19,8 +19,10 @@ namespace EmployeePayrollService
             List<EmployeeModel> EmployeeModelList = new List<EmployeeModel>();
            
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetEmployeePayrollAllData", connection);
-            command.CommandType = CommandType.StoredProcedure;
+            SqlCommand command = new SqlCommand("dbo.GetEmployeePayrollAllData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
             try
             {
                 connection.Open();
@@ -29,13 +31,15 @@ namespace EmployeePayrollService
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
-                        employee = new EmployeeModel();
-                        employee.EmpID = rd.IsDBNull(0) ? default : rd.GetInt32(0);
-                        employee.EmpName = rd.IsDBNull(1) ? default : rd.GetString(1);
-                        employee.Gender = rd.IsDBNull(2) ? default : rd.GetString(2);
-                        employee.StartDate = rd.IsDBNull(3) ? default : rd.GetDateTime(3);
-                        employee.Salary = rd.IsDBNull(4) ? default : rd.GetDecimal(4);
-                        employee.Department = rd.IsDBNull(5) ? default : rd.GetString(5);
+                        employee = new EmployeeModel
+                        {
+                            EmpID = rd.IsDBNull(0) ? default : rd.GetInt32(0),
+                            EmpName = rd.IsDBNull(1) ? default : rd.GetString(1),
+                            Gender = rd.IsDBNull(2) ? default : rd.GetString(2),
+                            StartDate = rd.IsDBNull(3) ? default : rd.GetDateTime(3),
+                            Salary = rd.IsDBNull(4) ? default : rd.GetDecimal(4),
+                            Department = rd.IsDBNull(5) ? default : rd.GetString(5)
+                        };
                         EmployeeModelList.Add(employee);
                     }
                     return EmployeeModelList;
@@ -47,6 +51,50 @@ namespace EmployeePayrollService
             }
             return null;
         }
+
+        public static List<EmployeeModel> GetAllEmployeePayrollData_FromDateRange(DateTime fromDate, DateTime toDate)
+        {
+            EmployeeModel employee;
+            List<EmployeeModel> EmployeeModelList = new List<EmployeeModel>();
+
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetAllEmployeePayrollData_FromDateRange", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@FromDate", fromDate);
+            command.Parameters.AddWithValue("@ToDate", toDate);
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+                        employee = new EmployeeModel
+                        {
+                            EmpID = rd.IsDBNull(0) ? default : rd.GetInt32(0),
+                            EmpName = rd.IsDBNull(1) ? default : rd.GetString(1),
+                            Gender = rd.IsDBNull(2) ? default : rd.GetString(2),
+                            StartDate = rd.IsDBNull(3) ? default : rd.GetDateTime(3),
+                            Salary = rd.IsDBNull(4) ? default : rd.GetDecimal(4),
+                            Department = rd.IsDBNull(5) ? default : rd.GetString(5)
+                        };
+                        EmployeeModelList.Add(employee);
+                    }
+                    return EmployeeModelList;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return null;
+        }
+
+
+
         /// <summary>
         /// Updates the name of the salary by emp.
         /// </summary>
@@ -143,7 +191,7 @@ namespace EmployeePayrollService
             }
             return 0;
         }
-        static void Main(string[] args)
+        static void Main()
         {
             Console.WriteLine("welcome to Employee Payroll Service");
         }

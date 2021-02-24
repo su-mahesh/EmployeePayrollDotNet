@@ -56,5 +56,26 @@ namespace NUnitTestProject
 
             Assert.IsFalse(result.Equals(0));
         }
+
+        [Test]
+        public void RetrievingEmployeePayrollDataByDate_ShouldReturnList()
+        {
+            DateTime FromDate = DateTime.Parse("2019-11-13"); 
+            DateTime ToDate = DateTime.Parse("2020-05-21");
+            string dateString = "2019-11-13";
+            DateTime dateTime = DateTime.Parse(dateString);
+            List<EmployeeModel> result = EmployeePayroll.GetAllEmployeePayrollData_FromDateRange(FromDate, ToDate);
+
+            EmployeeModel employee = new EmployeeModel
+            {
+                EmpID = 2,
+                EmpName = "Terissa",
+                Gender = "F",
+                StartDate = dateTime,
+                Salary = 3000000.0000M,
+                Department = "Sales",
+            };
+            Assert.IsTrue(result.Contains(employee));
+        }
     }
 }
