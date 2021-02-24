@@ -77,5 +77,14 @@ namespace NUnitTestProject
             };
             Assert.IsTrue(result.Contains(employee));
         }
+        [Test]
+        public void RetrievingSumOfSalary_ShouldReturnExpected()
+        {
+
+            decimal result = EmployeePayroll.GetSumOfSalary_OfAllEmployeePayrollData();
+
+            Assert.AreEqual(600000.0000M, result);
+        }
+
     }
 }

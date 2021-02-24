@@ -93,6 +93,36 @@ namespace EmployeePayrollService
             return null;
         }
 
+        public static decimal GetSumOfSalary_OfAllEmployeePayrollData()
+        {
+            decimal totalSalary = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+
+                        totalSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
+
+                    }
+                    return totalSalary;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return totalSalary;
+        }
+
 
 
         /// <summary>
