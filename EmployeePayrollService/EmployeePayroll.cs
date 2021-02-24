@@ -48,6 +48,42 @@ namespace EmployeePayrollService
             return null;
         }
         /// <summary>
+        /// Updates the name of the salary by emp.
+        /// </summary>
+        /// <param name="empName">Name of the emp.</param>
+        /// <param name="salary">The salary.</param>
+        /// <returns></returns>
+        public static int UpdateSalaryByEmpName(string empName, decimal salary)
+        {
+            SqlConnection connection = new SqlConnection(connectionString);
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand("dbo.UpdateEmployeePayrollSalaryBYEmpName", connection)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+                    cmd.Parameters.AddWithValue("@EmpName", empName);
+                    cmd.Parameters.AddWithValue("@Salary", salary);
+                    var returnParameter = cmd.Parameters.Add("@row_count", SqlDbType.Int);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+                    cmd.ExecuteNonQuery();
+
+                    connection.Close();
+                    var result = returnParameter.Value;
+                    return (int)result;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return 0;
+        }
+
+        /// <summary>
         /// Prints the employee data.
         /// </summary>
         /// <param name="employee">The employee.</param>
@@ -70,7 +106,11 @@ namespace EmployeePayrollService
                 }
             }
         }
-
+        /// <summary>
+        /// Inserts the employee data.
+        /// </summary>
+        /// <param name="employee">The employee.</param>
+        /// <returns></returns>
         static public int InsertEmployeeData(EmployeeModel employee)
         {
             SqlConnection connection = new SqlConnection(connectionString);
@@ -90,7 +130,7 @@ namespace EmployeePayrollService
                     cmd.Parameters.AddWithValue("@Department", employee.Department);             
                     var returnParameter = cmd.Parameters.Add("@new_identity", SqlDbType.Int);
                     returnParameter.Direction = ParameterDirection.ReturnValue;
-                    int rows = cmd.ExecuteNonQuery();
+                    cmd.ExecuteNonQuery();
                     
                     connection.Close();
                     var result = returnParameter.Value;
