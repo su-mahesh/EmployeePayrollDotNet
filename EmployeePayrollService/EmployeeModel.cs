@@ -18,7 +18,7 @@ namespace EmployeePayrollService
         public string Gender { get; set; }
         public DateTime StartDate { get; set; }
         public string Department { get; set; }
-        public decimal Salary { get; set; }
+        public decimal BasicPay { get; set; }
         /// <summary>
         /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
         /// </summary>
@@ -32,7 +32,7 @@ namespace EmployeePayrollService
             if (employee == null)
                 return false;
             return employee.EmpID == EmpID && employee.EmpName == EmpName && employee.Gender == Gender && employee.Department == Department
-                && employee.Salary == Salary && employee.StartDate == StartDate;
+                && employee.BasicPay == BasicPay && employee.StartDate == StartDate;
         }
         /// <summary>
         /// Returns a hash code for this instance.

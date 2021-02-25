@@ -19,7 +19,7 @@ namespace EmployeePayrollService
             List<EmployeeModel> EmployeeModelList = new List<EmployeeModel>();
            
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetEmployeePayrollAllData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetAllEmployeePayroll", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -31,16 +31,18 @@ namespace EmployeePayrollService
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
-                        employee = new EmployeeModel
-                        {
-                            EmpID = rd.IsDBNull(0) ? default : rd.GetInt32(0),
-                            EmpName = rd.IsDBNull(1) ? default : rd.GetString(1),
-                            Gender = rd.IsDBNull(2) ? default : rd.GetString(2),
-                            StartDate = rd.IsDBNull(3) ? default : rd.GetDateTime(3),
-                            Salary = rd.IsDBNull(4) ? default : rd.GetDecimal(4),
-                            Department = rd.IsDBNull(5) ? default : rd.GetString(5)
-                        };
+                        employee = new EmployeeModel();
+                        employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
+                        employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
+                        employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
+                        employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
+                        employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
+                        employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];                     
                         EmployeeModelList.Add(employee);
+                    }
+                    if (EmployeeModelList == null)
+                    {
+                        throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
                     }
                     return EmployeeModelList;
                 }
@@ -51,7 +53,12 @@ namespace EmployeePayrollService
             }
             return null;
         }
-
+        /// <summary>
+        /// Gets all employee payroll data from date range.
+        /// </summary>
+        /// <param name="fromDate">From date.</param>
+        /// <param name="toDate">To date.</param>
+        /// <returns></returns>
         public static List<EmployeeModel> GetAllEmployeePayrollData_FromDateRange(DateTime fromDate, DateTime toDate)
         {
             EmployeeModel employee;
@@ -78,7 +85,7 @@ namespace EmployeePayrollService
                             EmpName = rd.IsDBNull(1) ? default : rd.GetString(1),
                             Gender = rd.IsDBNull(2) ? default : rd.GetString(2),
                             StartDate = rd.IsDBNull(3) ? default : rd.GetDateTime(3),
-                            Salary = rd.IsDBNull(4) ? default : rd.GetDecimal(4),
+                            BasicPay = rd.IsDBNull(4) ? default : rd.GetDecimal(4),
                             Department = rd.IsDBNull(5) ? default : rd.GetString(5)
                         };
                         EmployeeModelList.Add(employee);
@@ -92,12 +99,16 @@ namespace EmployeePayrollService
             }
             return null;
         }
-
-        public static decimal GetAveragefSalary_OfAllMaleEmployee()
+        /// <summary>
+        /// Gets the averagef salary of all employees.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="EmployeePlayrollException">no such sql procedure</exception>
+        public static decimal GetAveragefSalary_OfAllEmployees()
         {
-            decimal AverageTotalSalary = 0;
+            decimal AverageSalary = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetAverageOfSalary_OfAllMaleEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.GetAverageOfSalary_OfAllEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -109,23 +120,31 @@ namespace EmployeePayrollService
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
-                        AverageTotalSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
+                        AverageSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
                     }
-                    return AverageTotalSalary;
+
+                    return AverageSalary;
                 }
             }
             catch (Exception e)
             {
+                if (e.Message.Contains("Could not find stored procedure"))
+                {
+                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_SUCH_SQL_PROCEDURE, "no such sql procedure");
+                }
                 Console.WriteLine(e);
             }
-            return AverageTotalSalary;
+            return AverageSalary;
         }
-
+        /// <summary>
+        /// Gets the no of female employees.
+        /// </summary>
+        /// <returns></returns>
         public static int GetNoOfFemaleEmployees()
         {
             int NumFemaleEmployees = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetNoOfFemale_EmployeesEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetNoOf_FemaleEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -148,12 +167,15 @@ namespace EmployeePayrollService
             }
             return NumFemaleEmployees;
         }
-
+        /// <summary>
+        /// Gets the no of male employees.
+        /// </summary>
+        /// <returns></returns>
         public static int GetNoOfMaleEmployees()
         {
             int NumMaleEmployees = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetNoOfMale_EmployeesEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetNoOf_MaleEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -176,15 +198,15 @@ namespace EmployeePayrollService
             }
             return NumMaleEmployees;
         }
-
-        public static Dictionary<string, Decimal> GegMinMaxOfSalary_OfAllMaleFemaleEmployee()
+        /// <summary>
+        /// Gegs the minimum maximum of salary of all male female employee.
+        /// </summary>
+        /// <returns></returns>
+        public static decimal GegMinOfSalary_OfFemaleEmployees()
         {
-            decimal MaleMinSalary = 0;
-            decimal MaleMaxSalary = 0;
-            decimal FemaleMinSalary = 0;
-            decimal FemaleMaxSalary = 0;
+            decimal MinSalary = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetMinMaxOfSalary_OfAllMaleFemaleEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetMinOfSalary_OfFemaleEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -196,34 +218,26 @@ namespace EmployeePayrollService
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
-                        if (rd.GetString(0).Equals("M"))
-                        {
-                            MaleMinSalary = rd.IsDBNull(1) ? default : rd.GetDecimal(1);
-                            MaleMaxSalary = rd.IsDBNull(2) ? default : rd.GetDecimal(2);
-                        }
-                        else
-                        {
-                            FemaleMinSalary = rd.IsDBNull(1) ? default : rd.GetDecimal(1);
-                            FemaleMaxSalary = rd.IsDBNull(2) ? default : rd.GetDecimal(2);
-                        }
+                        MinSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
                     }
-                    return new Dictionary<string, Decimal>() { { "MaleMinSalary", MaleMinSalary }, { "MaleMaxSalary", MaleMaxSalary },
-
-                                                               { "FemaleMinSalary", FemaleMinSalary }, { "FemaleMaxSalary", FemaleMaxSalary } };
+                    return MinSalary;
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-            return null;
+            return default;
         }
-
+        /// <summary>
+        /// Gets the sum of salary of all male employee.
+        /// </summary>
+        /// <returns></returns>
         public static decimal GetSumOfSalary_OfAllMaleEmployee()
         {
             decimal totalSalary = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllMaleEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetSumOfSalary_OfAllMaleEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -255,7 +269,7 @@ namespace EmployeePayrollService
         {
             decimal totalSalary = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllFemaleEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.Er_GetSumOfSalary_OfAllFemaleEmployees", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -279,15 +293,13 @@ namespace EmployeePayrollService
             return totalSalary;
         }
 
-
-
         /// <summary>
         /// Updates the name of the salary by emp.
         /// </summary>
         /// <param name="empName">Name of the emp.</param>
-        /// <param name="salary">The salary.</param>
+        /// <param name="BasicPay">The salary.</param>
         /// <returns></returns>
-        public static int UpdateSalaryByEmpName(string empName, decimal salary)
+        public static int UpdateSalaryByEmpName(string empName, decimal BasicPay)
         {
             SqlConnection connection = new SqlConnection(connectionString);
             try
@@ -295,16 +307,15 @@ namespace EmployeePayrollService
                 using (connection)
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("dbo.UpdateEmployeePayrollSalaryBYEmpName", connection)
+                    SqlCommand cmd = new SqlCommand("dbo.Er_UpdateEmployeePayrollSalaryByEmpName", connection)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
                     cmd.Parameters.AddWithValue("@EmpName", empName);
-                    cmd.Parameters.AddWithValue("@Salary", salary);
+                    cmd.Parameters.AddWithValue("@BasicPay", BasicPay);
                     var returnParameter = cmd.Parameters.Add("@row_count", SqlDbType.Int);
                     returnParameter.Direction = ParameterDirection.ReturnValue;
                     cmd.ExecuteNonQuery();
-
                     connection.Close();
                     var result = returnParameter.Value;
                     return (int)result;
@@ -327,7 +338,7 @@ namespace EmployeePayrollService
             Console.WriteLine("EmpName".PadRight(12) + ": " + employee.EmpName);
             Console.WriteLine("Gender".PadRight(12) + ": " + employee.Gender);
             Console.WriteLine("Start date".PadRight(12) + ": " + employee.StartDate);
-            Console.WriteLine("Salary".PadRight(12) + ":" + employee.Salary);
+            Console.WriteLine("Salary".PadRight(12) + ":" + employee.BasicPay);
             Console.WriteLine("Department".PadRight(12) + ": " + employee.Department);
         }
         public static void PrintEmployeeData(List<EmployeeModel> employeeList)
@@ -353,14 +364,14 @@ namespace EmployeePayrollService
                 using (connection)
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("dbo.InsertEmployeePayrollData", connection)
+                    SqlCommand cmd = new SqlCommand("dbo.Er_InsertEmployeePayrollData", connection)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
                     cmd.Parameters.AddWithValue("@EmpName", employee.EmpName);
                     cmd.Parameters.AddWithValue("@Gender", employee.Gender);
                     cmd.Parameters.AddWithValue("@StartDate", employee.StartDate);
-                    cmd.Parameters.AddWithValue("@Salary", employee.Salary);
+                    cmd.Parameters.AddWithValue("@BasicPay", employee.BasicPay);
                     cmd.Parameters.AddWithValue("@Department", employee.Department);             
                     var returnParameter = cmd.Parameters.Add("@new_identity", SqlDbType.Int);
                     returnParameter.Direction = ParameterDirection.ReturnValue;
@@ -377,6 +388,9 @@ namespace EmployeePayrollService
             }
             return 0;
         }
+        /// <summary>
+        /// Defines the entry point of the application.
+        /// </summary>
         static void Main()
         {
             Console.WriteLine("welcome to Employee Payroll Service");
