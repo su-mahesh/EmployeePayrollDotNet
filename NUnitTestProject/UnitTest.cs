@@ -37,14 +37,14 @@ namespace NUnitTestProject
             DateTime dateTime = DateTime.Parse(dateString);
             EmployeeModel employee = new EmployeeModel
             {
-                EmpName = "Sim",
+                EmpName = "gwen",
                 Gender = "F",
                 StartDate = dateTime,
-                BasicPay = 350000M,
-                Department = "ART",
+                BasicPay = 80000M,
+                Department = "DEO",
             };
             int identity = EmployeeManagement.InsertEmployeeData(employee);
-            Assert.IsFalse(identity.Equals(0));
+            Assert.IsTrue(identity.Equals(1));
         }
         /// <summary>
         /// Updatings the table should return no. of updated rows.

@@ -65,12 +65,32 @@ namespace EmployeePayrollService
                 }
                 else
                 {
-                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED,"connection failed");
-                }                                
+                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED, "connection failed");
+                }
             }
-            catch (Exception e)
+            catch (SqlException)
             {
-                Console.WriteLine(e);
+                try
+                {
+                    connection.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace); ;
+                }               
+            }
+            finally {
+                if (connection != null)
+                {
+                    try
+                    {
+                        connection.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.StackTrace); ;
+                    }
+                }
             }
             return null;
         }
@@ -114,9 +134,30 @@ namespace EmployeePayrollService
                     return EmployeeModelList;
                 }
             }
-            catch (Exception e)
+            catch (SqlException)
             {
-                Console.WriteLine(e);
+                try
+                {
+                    connection.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace); ;
+                }
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    try
+                    {
+                        connection.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.StackTrace); ;
+                    }
+                }
             }
             return null;
         }
@@ -147,13 +188,34 @@ namespace EmployeePayrollService
                     return AverageSalary;
                 }
             }
-            catch (Exception e)
+            catch (SqlException ex)
             {
-                if (e.Message.Contains("Could not find stored procedure"))
+                if (ex.Message.Contains("Could not find stored procedure"))
                 {
                     throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_SUCH_SQL_PROCEDURE, "no such sql procedure");
                 }
-                Console.WriteLine(e);
+                try
+                {
+                    connection.Close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.StackTrace); ;
+                }
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    try
+                    {
+                        connection.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.StackTrace); ;
+                    }
+                }
             }
             return AverageSalary;
         }
@@ -328,7 +390,7 @@ namespace EmployeePayrollService
                 using (connection)
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("dbo.Er_UpdateEmployeePayrollSalaryByEmpName", connection)
+                    SqlCommand cmd = new SqlCommand("dbo.Er_UpdateEmployeePayrollSalary", connection)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
@@ -395,6 +457,7 @@ namespace EmployeePayrollService
         static public int InsertEmployeeData(EmployeeModel employee)
         {
             SqlConnection connection = new SqlConnection(connectionString);
+            
             try
             {
                 using (connection)
@@ -408,11 +471,10 @@ namespace EmployeePayrollService
                     cmd.Parameters.AddWithValue("@Gender", employee.Gender);
                     cmd.Parameters.AddWithValue("@StartDate", employee.StartDate);
                     cmd.Parameters.AddWithValue("@BasicPay", employee.BasicPay);
-                    cmd.Parameters.AddWithValue("@Department", employee.Department);             
-                    var returnParameter = cmd.Parameters.Add("@new_identity", SqlDbType.Int);
+                    cmd.Parameters.AddWithValue("@Department", employee.Department);
+                    var returnParameter = cmd.Parameters.Add("@result", SqlDbType.Bit);
                     returnParameter.Direction = ParameterDirection.ReturnValue;
                     cmd.ExecuteNonQuery();
-                    
                     connection.Close();
                     var result = returnParameter.Value;
                     return (int)result; 
@@ -422,6 +484,7 @@ namespace EmployeePayrollService
             {
                 Console.WriteLine(e);
             }
+
             return 0;
         }
         /// <summary>
