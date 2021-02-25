@@ -5,9 +5,26 @@ using System.Data.SqlClient;
 
 namespace EmployeePayrollService
 {
-    public class EmployeePayroll
+    public class EmployeeManagement
     {
         static readonly string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EmployeePayroll;User Id=mahesh;Password=root";
+        static SqlConnection connection = new SqlConnection(connectionString);
+ 
+        static bool EstablishConnection()
+        {
+            if (!connection.State.Equals(ConnectionState.Closed))
+            {
+                try
+                {
+                    connection.Open();
+                }
+                catch (Exception)
+                {
+                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED, "connection failed");
+                }                
+            }
+            return true;
+        }
 
         /// <summary>
         /// Gets all employee payroll data.
@@ -17,35 +34,39 @@ namespace EmployeePayrollService
         {
             EmployeeModel employee;
             List<EmployeeModel> EmployeeModelList = new List<EmployeeModel>();
-           
-            SqlConnection connection = new SqlConnection(connectionString);
             SqlCommand command = new SqlCommand("dbo.Er_GetAllEmployeePayroll", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
             try
             {
-                connection.Open();
-                using (connection)
+                if (EstablishConnection())
                 {
-                    SqlDataReader rd = command.ExecuteReader();
-                    while (rd.Read())
+                    using (connection)
                     {
-                        employee = new EmployeeModel();
-                        employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
-                        employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
-                        employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
-                        employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
-                        employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
-                        employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];                     
-                        EmployeeModelList.Add(employee);
+                        SqlDataReader rd = command.ExecuteReader();
+                        while (rd.Read())
+                        {
+                            employee = new EmployeeModel();
+                            employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
+                            employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
+                            employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
+                            employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
+                            employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
+                            employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];
+                            EmployeeModelList.Add(employee);
+                        }
+                        if (EmployeeModelList == null)
+                        {
+                            throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
+                        }
+                        return EmployeeModelList;
                     }
-                    if (EmployeeModelList == null)
-                    {
-                        throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
-                    }
-                    return EmployeeModelList;
                 }
+                else
+                {
+                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED,"connection failed");
+                }                                
             }
             catch (Exception e)
             {
@@ -299,7 +320,7 @@ namespace EmployeePayrollService
         /// <param name="empName">Name of the emp.</param>
         /// <param name="BasicPay">The salary.</param>
         /// <returns></returns>
-        public static int UpdateSalaryByEmpName(string empName, decimal BasicPay)
+        public static EmployeeModel UpdateSalary(EmployeeModel employee)
         {
             SqlConnection connection = new SqlConnection(connectionString);
             try
@@ -311,21 +332,36 @@ namespace EmployeePayrollService
                     {
                         CommandType = CommandType.StoredProcedure
                     };
-                    cmd.Parameters.AddWithValue("@EmpName", empName);
-                    cmd.Parameters.AddWithValue("@BasicPay", BasicPay);
+                    cmd.Parameters.AddWithValue("@EmpID", employee.EmpID);
+                    cmd.Parameters.AddWithValue("@EmpName", employee.EmpName);
+                    cmd.Parameters.AddWithValue("@BasicPay", employee.BasicPay);
                     var returnParameter = cmd.Parameters.Add("@row_count", SqlDbType.Int);
                     returnParameter.Direction = ParameterDirection.ReturnValue;
-                    cmd.ExecuteNonQuery();
+                    employee = new EmployeeModel();
+                    SqlDataReader rd = cmd.ExecuteReader();
+                    while (rd.Read())
+                    {                        
+                        employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
+                        employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
+                        employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
+                        employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
+                        employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
+                        employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];
+                    }
+                    if (employee == null)
+                    {
+                        throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
+                    }
                     connection.Close();
                     var result = returnParameter.Value;
-                    return (int)result;
+                    return employee;
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-            return 0;
+            return null;            
         }
 
         /// <summary>

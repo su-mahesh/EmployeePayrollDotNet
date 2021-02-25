@@ -13,7 +13,8 @@ namespace EmployeePayrollService
         {
             NO_DATA_FOUND,
             INSERTION_ERROR,
-            NO_SUCH_SQL_PROCEDURE
+            NO_SUCH_SQL_PROCEDURE,
+            CONNECTION_FAILED
         }
         ExceptionType exceptionType;
         /// <summary>

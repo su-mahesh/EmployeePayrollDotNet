@@ -13,7 +13,7 @@ namespace NUnitTestProject
         [Test]
         public void GettingAllEmployeeDetail_ShouldReturnExpected()
         {
-            List<EmployeeModel> result = EmployeePayroll.GetAllEmployeePayrollData();
+            List<EmployeeModel> result = EmployeeManagement.GetAllEmployeePayrollData();
             string dateString = "Jan 03, 2018";
             DateTime dateTime = DateTime.Parse(dateString);
             EmployeeModel employee = new EmployeeModel
@@ -43,18 +43,28 @@ namespace NUnitTestProject
                 BasicPay = 350000M,
                 Department = "ART",
             };
-            int identity = EmployeePayroll.InsertEmployeeData(employee);
+            int identity = EmployeeManagement.InsertEmployeeData(employee);
             Assert.IsFalse(identity.Equals(0));
         }
         /// <summary>
         /// Updatings the table should return no. of updated rows.
         /// </summary>
         [Test]
-        public void UpdatingTable_ShouldReturnNoOfUpdatedRows()
+        public void UpdatingSalary_ShouldReturnNoOfUpdatedEmpObject()
         {
-            int result = EmployeePayroll.UpdateSalaryByEmpName("Terissa", 3000000);
-
-            Assert.IsFalse(result.Equals(0));
+            string dateString = "2019-11-13";
+            DateTime dateTime = DateTime.Parse(dateString);
+            EmployeeModel employee = new EmployeeModel
+            {
+                EmpID = 2,
+                EmpName = "Terissa",
+                Gender = "F",
+                StartDate = dateTime,
+                BasicPay = 3000000M,
+                Department = "marketing"
+            };
+            var result = EmployeeManagement.UpdateSalary(employee);
+            Assert.AreEqual(employee, result);
         }
 
         [Test]
@@ -62,7 +72,7 @@ namespace NUnitTestProject
         {
             DateTime FromDate = DateTime.Parse("2019-11-13"); 
             DateTime ToDate = DateTime.Parse("2020-05-21");
-            List<EmployeeModel> result = EmployeePayroll.GetAllEmployeePayrollData_FromDateRange(FromDate, ToDate);
+            List<EmployeeModel> result = EmployeeManagement.GetAllEmployeePayrollData_FromDateRange(FromDate, ToDate);
             Assert.IsNotNull(result);
         }
         /// <summary>
@@ -71,7 +81,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingSumOfSalaryOfAllFemaleEmloyees_ShouldReturnExpected()
         {
-            decimal result = EmployeePayroll.GetSumOfSalary_OfAllFemaleEmployee();
+            decimal result = EmployeeManagement.GetSumOfSalary_OfAllFemaleEmployee();
             Assert.AreEqual(4050000M, result);
         }
         /// <summary>
@@ -80,7 +90,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingSumOfSalaryOfAllMaleEmloyees_ShouldReturnExpected()
         {
-            decimal result = EmployeePayroll.GetSumOfSalary_OfAllMaleEmployee();
+            decimal result = EmployeeManagement.GetSumOfSalary_OfAllMaleEmployee();
             Assert.AreEqual(420000M, result);
         }
         /// <summary>
@@ -89,7 +99,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingAverageSalaryOfAllEmloyees_ShouldReturnExpected()
         {
-            decimal result = EmployeePayroll.GetAveragefSalary_OfAllEmployees();
+            decimal result = EmployeeManagement.GetAveragefSalary_OfAllEmployees();
             Assert.AreEqual(638571.4285M, result);
         }
         /// <summary>
@@ -98,7 +108,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingMinSalaryOfFemaleEmloyees_ShouldReturnExpected()
         {
-            decimal result = EmployeePayroll.GegMinOfSalary_OfFemaleEmployees();
+            decimal result = EmployeeManagement.GegMinOfSalary_OfFemaleEmployees();
             Assert.AreEqual(350000M, result);
         }
         /// <summary>
@@ -107,7 +117,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingNoOfFemaleEmloyees_ShouldReturnExpected()
         {
-            int result = EmployeePayroll.GetNoOfFemaleEmployees();
+            int result = EmployeeManagement.GetNoOfFemaleEmployees();
             Assert.AreEqual(4, result);
         }
         /// <summary>
@@ -116,7 +126,7 @@ namespace NUnitTestProject
         [Test]
         public void RetrievingNoOfMaleEmloyees_ShouldReturnExpected()
         {
-            int result = EmployeePayroll.GetNoOfMaleEmployees();
+            int result = EmployeeManagement.GetNoOfMaleEmployees();
             Assert.AreEqual(4, result);
         }
 
