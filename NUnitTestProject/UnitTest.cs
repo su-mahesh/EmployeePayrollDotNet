@@ -65,7 +65,6 @@ namespace NUnitTestProject
             string dateString = "2019-11-13";
             DateTime dateTime = DateTime.Parse(dateString);
             List<EmployeeModel> result = EmployeePayroll.GetAllEmployeePayrollData_FromDateRange(FromDate, ToDate);
-
             EmployeeModel employee = new EmployeeModel
             {
                 EmpID = 2,
@@ -81,12 +80,37 @@ namespace NUnitTestProject
         /// Retrievings the sum of salary should return expected.
         /// </summary>
         [Test]
-        public void RetrievingSumOfSalary_ShouldReturnExpected()
+        public void RetrievingSumOfSalaryOfAllFemaleEmloyees_ShouldReturnExpected()
         {
-            decimal result = EmployeePayroll.GetSumOfSalary_OfAllEmployeePayrollData();
-
-            Assert.AreEqual(600000.0000M, result);
+            decimal result = EmployeePayroll.GetSumOfSalary_OfAllFemaleEmployee();
+            Assert.AreEqual(200000.0000M, result);
         }
 
+        [Test]
+        public void RetrievingSumOfSalaryOfAllMaleEmloyees_ShouldReturnExpected()
+        {
+            decimal result = EmployeePayroll.GetSumOfSalary_OfAllMaleEmployee();
+            Assert.AreEqual(400000.0000M, result);
+        }
+
+        [Test]
+        public void RetrievingAverageOfSalaryOfAllMaleEmloyees_ShouldReturnExpected()
+        {
+            decimal result = EmployeePayroll.GetAveragefSalary_OfAllMaleEmployee();
+
+            Assert.AreEqual(140000M, result);
+        }
+        [Test]
+        public void RetrievingMinMaxOfSalaryOfMaleFemaleEmloyees_ShouldReturnExpected()
+        {
+            Dictionary<string, Decimal> result = EmployeePayroll.GegMinMaxOfSalary_OfAllMaleFemaleEmployee();
+            Dictionary<string, Decimal> expected = new Dictionary<string, Decimal>() { 
+                { "MaleMinSalary", 20000M },
+                { "MaleMaxSalary", 300000M },
+                { "FemaleMinSalary", 3000000M },
+                { "FemaleMaxSalary", 3000000M }};
+
+            Assert.AreEqual(expected, result);
+        }
     }
 }

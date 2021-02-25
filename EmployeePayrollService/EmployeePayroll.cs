@@ -92,15 +92,12 @@ namespace EmployeePayrollService
             }
             return null;
         }
-        /// <summary>
-        /// Gets the sum of salary of all employee payroll data.
-        /// </summary>
-        /// <returns></returns>
-        public static decimal GetSumOfSalary_OfAllEmployeePayrollData()
+
+        public static decimal GetAveragefSalary_OfAllMaleEmployee()
         {
-            decimal totalSalary = 0;
+            decimal AverageTotalSalary = 0;
             SqlConnection connection = new SqlConnection(connectionString);
-            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllEmployeePayrollData", connection)
+            SqlCommand command = new SqlCommand("dbo.GetAverageOfSalary_OfAllMaleEmployeePayrollData", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
@@ -112,9 +109,109 @@ namespace EmployeePayrollService
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
+                        AverageTotalSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
+                    }
+                    return AverageTotalSalary;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return AverageTotalSalary;
+        }
 
+        public static Dictionary<string, Decimal> GegMinMaxOfSalary_OfAllMaleFemaleEmployee()
+        {
+            decimal MaleMinSalary = 0;
+            decimal MaleMaxSalary = 0;
+            decimal FemaleMinSalary = 0;
+            decimal FemaleMaxSalary = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetMinMaxOfSalary_OfAllMaleFemaleEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+                        if (rd.GetString(0).Equals("M"))
+                        {
+                            MaleMinSalary = rd.IsDBNull(1) ? default : rd.GetDecimal(1);
+                            MaleMaxSalary = rd.IsDBNull(2) ? default : rd.GetDecimal(2);
+                        }
+                        else
+                        {
+                            FemaleMinSalary = rd.IsDBNull(1) ? default : rd.GetDecimal(1);
+                            FemaleMaxSalary = rd.IsDBNull(2) ? default : rd.GetDecimal(2);
+                        }
+                    }
+                    return new Dictionary<string, Decimal>() { { "MaleMinSalary", MaleMinSalary }, { "MaleMaxSalary", MaleMaxSalary },
+
+                                                               { "FemaleMinSalary", FemaleMinSalary }, { "FemaleMaxSalary", FemaleMaxSalary } };
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return null;
+        }
+
+        public static decimal GetSumOfSalary_OfAllMaleEmployee()
+        {
+            decimal totalSalary = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllMaleEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
                         totalSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
+                    }
+                    return totalSalary;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return totalSalary;
+        }
 
+        /// <summary>
+        /// Gets the sum of salary of all employee payroll data.
+        /// </summary>
+        /// <returns></returns>
+        public static decimal GetSumOfSalary_OfAllFemaleEmployee()
+        {
+            decimal totalSalary = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetSumOfSalary_OfAllFemaleEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+                        totalSalary = rd.IsDBNull(0) ? default : rd.GetDecimal(0);
                     }
                     return totalSalary;
                 }
@@ -200,7 +297,7 @@ namespace EmployeePayrollService
                 using (connection)
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand("dbo.AddEmployeePayrollData", connection)
+                    SqlCommand cmd = new SqlCommand("dbo.InsertEmployeePayrollData", connection)
                     {
                         CommandType = CommandType.StoredProcedure
                     };
