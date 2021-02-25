@@ -121,6 +121,62 @@ namespace EmployeePayrollService
             return AverageTotalSalary;
         }
 
+        public static int GetNoOfFemaleEmployees()
+        {
+            int NumFemaleEmployees = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetNoOfFemale_EmployeesEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+                        NumFemaleEmployees = rd.IsDBNull(0) ? default : rd.GetInt32(0);
+                    }
+                    return NumFemaleEmployees;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return NumFemaleEmployees;
+        }
+
+        public static int GetNoOfMaleEmployees()
+        {
+            int NumMaleEmployees = 0;
+            SqlConnection connection = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand("dbo.GetNoOfMale_EmployeesEmployeePayrollData", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                connection.Open();
+                using (connection)
+                {
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
+                    {
+                        NumMaleEmployees = rd.IsDBNull(0) ? default : rd.GetInt32(0);
+                    }
+                    return NumMaleEmployees;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            return NumMaleEmployees;
+        }
+
         public static Dictionary<string, Decimal> GegMinMaxOfSalary_OfAllMaleFemaleEmployee()
         {
             decimal MaleMinSalary = 0;

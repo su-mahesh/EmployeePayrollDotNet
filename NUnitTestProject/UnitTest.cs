@@ -85,21 +85,27 @@ namespace NUnitTestProject
             decimal result = EmployeePayroll.GetSumOfSalary_OfAllFemaleEmployee();
             Assert.AreEqual(200000.0000M, result);
         }
-
+        /// <summary>
+        /// Retrievings the sum of salary of all male emloyees should return expected.
+        /// </summary>
         [Test]
         public void RetrievingSumOfSalaryOfAllMaleEmloyees_ShouldReturnExpected()
         {
             decimal result = EmployeePayroll.GetSumOfSalary_OfAllMaleEmployee();
             Assert.AreEqual(400000.0000M, result);
         }
-
+        /// <summary>
+        /// Retrievings the average of salary of all male emloyees should return expected.
+        /// </summary>
         [Test]
         public void RetrievingAverageOfSalaryOfAllMaleEmloyees_ShouldReturnExpected()
         {
             decimal result = EmployeePayroll.GetAveragefSalary_OfAllMaleEmployee();
-
             Assert.AreEqual(140000M, result);
         }
+        /// <summary>
+        /// Retrievings the minimum maximum of salary of male female emloyees should return expected.
+        /// </summary>
         [Test]
         public void RetrievingMinMaxOfSalaryOfMaleFemaleEmloyees_ShouldReturnExpected()
         {
@@ -109,8 +115,26 @@ namespace NUnitTestProject
                 { "MaleMaxSalary", 300000M },
                 { "FemaleMinSalary", 3000000M },
                 { "FemaleMaxSalary", 3000000M }};
-
             Assert.AreEqual(expected, result);
         }
+        /// <summary>
+        /// Retrievings the no of female emloyees should return expected.
+        /// </summary>
+        [Test]
+        public void RetrievingNoOfFemaleEmloyees_ShouldReturnExpected()
+        {
+            int result = EmployeePayroll.GetNoOfFemaleEmployees();
+            Assert.AreEqual(1, result);
+        }
+        /// <summary>
+        /// Retrievings the no of male emloyees should return expected.
+        /// </summary>
+        [Test]
+        public void RetrievingNoOfMaleEmloyees_ShouldReturnExpected()
+        {
+            int result = EmployeePayroll.GetNoOfMaleEmployees();
+            Assert.AreEqual(5, result);
+        }
+
     }
 }
