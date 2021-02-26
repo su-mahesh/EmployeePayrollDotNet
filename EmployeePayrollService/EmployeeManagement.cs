@@ -10,9 +10,9 @@ namespace EmployeePayrollService
         static readonly string connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=EmployeePayroll;User Id=mahesh;Password=root";
         static SqlConnection connection = new SqlConnection(connectionString);
  
-        static bool EstablishConnection()
+        static void EstablishConnection()
         {
-            if (!connection.State.Equals(ConnectionState.Closed))
+            if (connection != null && connection.State.Equals(ConnectionState.Closed))
             {
                 try
                 {
@@ -23,7 +23,20 @@ namespace EmployeePayrollService
                     throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED, "connection failed");
                 }                
             }
-            return true;
+        }
+        static void CloseConnection()
+        {
+            if (connection != null && !connection.State.Equals(ConnectionState.Open))
+            {
+                try
+                {
+                    connection.Close();
+                }
+                catch (Exception)
+                {
+                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED, "connection failed");
+                }
+            }
         }
 
         /// <summary>
@@ -40,57 +53,38 @@ namespace EmployeePayrollService
             };
             try
             {
-                if (EstablishConnection())
+                EstablishConnection();
+                using (connection)
                 {
-                    using (connection)
+                    SqlDataReader rd = command.ExecuteReader();
+                    while (rd.Read())
                     {
-                        SqlDataReader rd = command.ExecuteReader();
-                        while (rd.Read())
-                        {
-                            employee = new EmployeeModel();
-                            employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
-                            employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
-                            employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
-                            employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
-                            employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
-                            employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];
-                            EmployeeModelList.Add(employee);
-                        }
-                        if (EmployeeModelList == null)
-                        {
-                            throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
-                        }
-                        return EmployeeModelList;
+                        employee = new EmployeeModel();
+                        employee.EmpID = rd["EmpID"] == DBNull.Value ? default : (int)rd["EmpID"];
+                        employee.EmpName = rd["EmpName"] == DBNull.Value ? default : (string)rd["EmpName"];
+                        employee.Gender = rd["Gender"] == DBNull.Value ? default : (string)rd["Gender"];
+                        employee.StartDate = rd["StartDate"] == DBNull.Value ? default : (DateTime)rd["StartDate"];
+                        employee.BasicPay = rd["BasicPay"] == DBNull.Value ? default : (decimal)rd["BasicPay"];
+                        employee.Department = rd["DepartmentName"] == DBNull.Value ? default : (string)rd["DepartmentName"];
+                        EmployeeModelList.Add(employee);
                     }
-                }
-                else
-                {
-                    throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.CONNECTION_FAILED, "connection failed");
+                    if (EmployeeModelList == null)
+                    {
+                        throw new EmployeePlayrollException(EmployeePlayrollException.ExceptionType.NO_DATA_FOUND, "no data found");
+                    }
+                    return EmployeeModelList;
                 }
             }
             catch (SqlException)
             {
                 try
                 {
-                    connection.Close();
+                    CloseConnection();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.StackTrace); ;
+                    Console.WriteLine(e.Message); ;
                 }               
-            }
-            finally {
-                if (connection != null)
-                {
-                    try
-                    {
-                        connection.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.StackTrace); ;
-                    }
-                }
             }
             return null;
         }
@@ -110,13 +104,13 @@ namespace EmployeePayrollService
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.AddWithValue("@FromDate", fromDate);
-            command.Parameters.AddWithValue("@ToDate", toDate);
             try
             {
                 connection.Open();
                 using (connection)
                 {
+                    command.Parameters.AddWithValue("@FromDate", fromDate);
+                    command.Parameters.AddWithValue("@ToDate", toDate);
                     SqlDataReader rd = command.ExecuteReader();
                     while (rd.Read())
                     {
@@ -138,29 +132,49 @@ namespace EmployeePayrollService
             {
                 try
                 {
-                    connection.Close();
+                    CloseConnection();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.StackTrace); ;
-                }
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    try
-                    {
-                        connection.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.StackTrace); ;
-                    }
+                    Console.WriteLine(e.Message); ;
                 }
             }
             return null;
         }
+
+        public static bool RemoveEmployeeFromPayroll(EmployeeModel employee)
+        {
+            SqlCommand cmd = new SqlCommand("dbo.Er_RemoveEmployeeFromPayroll", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            try
+            {
+                EstablishConnection();                
+                using (connection)
+                {
+                    cmd.Parameters.AddWithValue("@EmpID", employee.EmpID);
+                    var returnParameter = cmd.Parameters.Add("@result", SqlDbType.Bit);
+                    returnParameter.Direction = ParameterDirection.ReturnValue;
+                    cmd.ExecuteNonQuery();
+                    var result = returnParameter.Value;
+                    return result.Equals(1);
+                }
+            }
+            catch (SqlException)
+            {
+                try
+                {
+                    CloseConnection();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message); ;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Gets the averagef salary of all employees.
         /// </summary>
@@ -454,10 +468,9 @@ namespace EmployeePayrollService
         /// </summary>
         /// <param name="employee">The employee.</param>
         /// <returns></returns>
-        static public int InsertEmployeeData(EmployeeModel employee)
+        static public bool InsertEmployeeData(EmployeeModel employee)
         {
-            SqlConnection connection = new SqlConnection(connectionString);
-            
+            SqlConnection connection = new SqlConnection(connectionString);            
             try
             {
                 using (connection)
@@ -477,7 +490,7 @@ namespace EmployeePayrollService
                     cmd.ExecuteNonQuery();
                     connection.Close();
                     var result = returnParameter.Value;
-                    return (int)result; 
+                    return (bool)result; 
                 }
             }
             catch (Exception e)
@@ -485,7 +498,7 @@ namespace EmployeePayrollService
                 Console.WriteLine(e);
             }
 
-            return 0;
+            return false;
         }
         /// <summary>
         /// Defines the entry point of the application.

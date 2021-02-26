@@ -43,8 +43,8 @@ namespace NUnitTestProject
                 BasicPay = 80000M,
                 Department = "DEO",
             };
-            int identity = EmployeeManagement.InsertEmployeeData(employee);
-            Assert.IsTrue(identity.Equals(1));
+            bool result = EmployeeManagement.InsertEmployeeData(employee);
+            Assert.IsTrue(result);
         }
         /// <summary>
         /// Updatings the table should return no. of updated rows.
@@ -128,6 +128,24 @@ namespace NUnitTestProject
         {
             int result = EmployeeManagement.GetNoOfMaleEmployees();
             Assert.AreEqual(4, result);
+        }
+
+        [Test]
+        public void RemovingEmployeeFromPayroll_ShouldReturnExpected()
+        {
+            string dateString = "2019-11-13";
+            DateTime dateTime = DateTime.Parse(dateString);
+            EmployeeModel employee = new EmployeeModel
+            {
+                EmpID = 1039,
+                EmpName = "qww",
+                Gender = "F",
+                StartDate = dateTime,
+                BasicPay = 3000000M,
+                Department = "marketing"
+            };
+            bool result = EmployeeManagement.RemoveEmployeeFromPayroll(employee);
+            Assert.IsTrue(result);
         }
 
     }
